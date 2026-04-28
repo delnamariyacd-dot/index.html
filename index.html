@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Grand Farewell Invitation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-pink: #ff85a1;
+            --soft-gold: #d4af37;
+            --deep-floral: #4a0e2e;
+        }
+
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            font-family: 'Poppins', sans-serif;
+            overflow: hidden; /* Prevents scrolling during the intro */
+            background: #fffafa;
+        }
+
+        /* --- Animations: Flowers & Hearts --- */
+        .floating-element {
+            position: absolute; top: -10%; pointer-events: none;
+            z-index: 100; animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* --- Section 1: The Unlock Page --- */
+        #unlock-page {
+            height: 100vh; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            text-align: center; background: linear-gradient(to bottom, #ffeef2, #fff);
+            padding: 20px;
+        }
+
+        .input-box {
+            background: white; padding: 30px; border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 80%; max-width: 350px;
+        }
+
+        input[type="text"] {
+            width: 100%; padding: 12px; margin: 15px 0;
+            border: 2px solid var(--primary-pink); border-radius: 10px;
+            outline: none; font-size: 16px; box-sizing: border-box;
+        }
+
+        button {
+            background: var(--primary-pink); color: white; border: none;
+            padding: 12px 25px; border-radius: 50px; cursor: pointer;
+            font-weight: 600; transition: transform 0.2s;
+        }
+
+        button:hover { transform: scale(1.05); }
+
+        /* --- Modal/Dialog Styling --- */
+        .modal {
+            display: none; position: fixed; z-index: 1000;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); align-items: center; justify-content: center;
+        }
+
+        .modal-content {
+            background: white; padding: 40px; border-radius: 20px;
+            text-align: center; width: 80%; max-width: 300px;
+        }
+
+        /* --- Section 2: The Main Invitation --- */
+        #main-invite {
+            display: none; height: 100vh; width: 100vw;
+            background: url('https://www.transparenttextures.com/patterns/pinstriped-suit.png'), linear-gradient(135deg, #fff0f3 0%, #ffccd5 100%);
+            overflow-y: auto; text-align: center; padding-top: 50px;
+        }
+
+        .header-title {
+            font-size: 1.2rem; color: var(--deep-floral);
+            letter-spacing: 2px; font-weight: 600;
+        }
+
+        .main-heading {
+            font-family: 'Dancing Script', cursive;
+            font-size: 3.5rem; color: var(--primary-pink); margin: 10px 0;
+        }
+
+        .details { font-size: 1.1rem; line-height: 1.8; margin-top: 20px; }
+        .quote { font-style: italic; color: #777; margin: 30px; padding: 0 20px; }
+
+        #poster-img {
+            display: none; width: 90%; max-width: 400px; 
+            margin: 20px auto; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="unlock-page">
+        <div class="input-box">
+            <h2 style="color: var(--deep-floral);">Welcome!</h2>
+            <p>Enter your name to unlock your invitation</p>
+            <input type="text" id="userName" placeholder="Your Name here...">
+            <button onclick="checkName()">Submit</button>
+        </div>
+    </div>
+
+    <div id="readyModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalQuestion">Are you ready for your farewell?</h3>
+            <div style="display:flex; justify-content: space-around; margin-top: 20px;">
+                <button onclick="goToInvite()">Yes!</button>
+                <button style="background: #ccc;" onclick="handleNo()">No</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-invite">
+        <div class="header-title">CHRIST COLLEGE (AUTONOMOUS) IRINJALAKUDA</div>
+        <h1 class="main-heading">You're Invited!</h1>
+        <p style="font-size: 1.3rem;">To a grand send-off for our beloved seniors</p>
+        
+        <div class="details">
+            <strong style="color: var(--soft-gold);">DATE:</strong> May 5, 2026<br>
+            <strong style="color: var(--soft-gold);">TIME:</strong> 10:00 AM<br>
+            <strong style="color: var(--soft-gold);">VENUE:</strong> Saint Chavara Seminar Hall
+        </div>
+
+        <div class="quote">
+            "Every ending has a new beginning. We will miss your guidance and the memories we made together."
+        </div>
+
+        <img id="poster-img" src="YOUR_POSTER_IMAGE_URL_HERE" alt="Farewell Poster">
+
+        <div style="margin: 40px 0;">
+            <button id="viewPosterBtn" onclick="showPoster()">View Official Poster</button>
+            <button id="exitBtn" style="display:none; background: var(--deep-floral);" onclick="window.close()">Okay</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Falling Effects ---
+        function createFlower() {
+            const el = document.createElement('div');
+            el.className = 'floating-element';
+            // Randomly choose flower or heart
+            const isHeart = Math.random() > 0.5;
+            el.innerHTML = isHeart ? '🌸' : '❤️';
+            el.style.left = Math.random() * 100 + 'vw';
+            el.style.fontSize = (Math.random() * 20 + 10) + 'px';
+            el.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 5000);
+        }
+        setInterval(createFlower, 300);
+
+        // --- Logic ---
+        let noCount = 0;
+        function checkName() {
+            const name = document.getElementById('userName').value;
+            if(name.trim() !== "") {
+                document.getElementById('readyModal').style.display = 'flex';
+            } else {
+                alert("Please enter your name first!");
+            }
+        }
+
+        function handleNo() {
+            noCount++;
+            const q = document.getElementById('modalQuestion');
+            if(noCount == 1) q.innerText = "Are you sure? 🥺";
+            else if(noCount == 2) q.innerText = "Please don't! It would be fun! ✨";
+            else {
+                alert("We really want you there! Closing page...");
+                window.location.href = "https://www.google.com"; // Exit logic
+            }
+        }
+
+        function goToInvite() {
+            document.getElementById('readyModal').style.display = 'none';
+            document.getElementById('unlock-page').style.display = 'none';
+            document.getElementById('main-invite').style.display = 'block';
+            
+            // Confetti Blast
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+
+        function showPoster() {
+            document.getElementById('poster-img').style.display = 'block';
+            document.getElementById('viewPosterBtn').style.display = 'none';
+            document.getElementById('exitBtn').style.display = 'inline-block';
+            
+            // Scroll to bottom
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
